@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import roslib
 roslib.load_manifest('yolact_ros')
 import sys
@@ -61,18 +61,18 @@ class YolactNode:
 
     # set parameter default values (will be overwritten by dynamic reconfigure callback)
 
-    self.image_topic = ''
+    self.image_topic = '/camera/rgb/image_raw'
     self.use_compressed_image = False
-    self.publish_visualization = True
+    self.publish_visualization = False
     self.publish_detections = True
-    self.display_visualization = False
+    self.display_visualization = True
 
     self.display_masks = True
     self.display_bboxes = True
     self.display_text = True
     self.display_scores = True
     self.display_fps = False
-    self.score_threshold = 0.0
+    self.score_threshold = 0.15
     self.crop_masks = True
     self.top_k = 5
 
@@ -247,7 +247,9 @@ class YolactNode:
       det.box.x2 = int(x2)
       det.box.y2 = int(y2)
       mask = masks[detnum,y1:y2,x1:x2]
-      det.mask.mask = np.packbits(mask.bool().cpu()).tolist()
+      #det.mask.mask = np.packbits(mask.bool().cpu()).tolist()
+      det.mask.mask = np.array(mask.flatten().cpu(), dtype=bool)
+
       det.mask.height = int(y2 - y1)
       det.mask.width = int(x2 - x1)
       dets_msg.detections.append(det)
@@ -364,7 +366,7 @@ def main(args):
   rospack = rospkg.RosPack()
   yolact_path = rospack.get_path('yolact_ros')
   
-  model_path_str = rospy.get_param('~model_path', os.path.join(yolact_path, "scripts/yolact/weights/yolact_plus_base_54_800000.pth"))
+  model_path_str = rospy.get_param('~model_path', os.path.join(yolact_path, "scripts/yolact/weights/yolact_darknet53_54_800000.pth"))
   model_path = SavePath.from_str(model_path_str)
   set_cfg(model_path.model_name + '_config')
 
