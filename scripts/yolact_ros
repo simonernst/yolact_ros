@@ -52,7 +52,7 @@ class YolactNode:
     self.image_pub = rospy.Publisher("~visualization", Image, queue_size=1)
 
     self.detections_pub = rospy.Publisher("~detections", Detections, queue_size=1)
-
+    #self.str_detections_pub = rospy.Publisher("/yolact_ros/str_detections", String, queue_size=1)
     self.bridge = CvBridge()
 
     self.image_vis_queue = Queue(maxsize = 1)
@@ -63,9 +63,9 @@ class YolactNode:
 
     self.image_topic = '/camera/rgb/image_raw'
     self.use_compressed_image = False
-    self.publish_visualization = False
+    self.publish_visualization = True
     self.publish_detections = True
-    self.display_visualization = True
+    self.display_visualization = False
 
     self.display_masks = True
     self.display_bboxes = True
@@ -287,6 +287,7 @@ class YolactNode:
       if self.publish_detections:
         dets = self.generate_detections_msg(classes, scores, boxes, masks, image_header)
         self.detections_pub.publish(dets)
+        #self.str_detections_pub.publish(str(dets))
 
       if self.display_visualization and not self.image_vis_queue.full():
         self.image_vis_queue.put_nowait(image)
