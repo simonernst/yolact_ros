@@ -52,7 +52,7 @@ class YolactNode:
     self.image_pub = rospy.Publisher("~visualization", Image, queue_size=1)
 
     self.detections_pub = rospy.Publisher("~detections", Detections, queue_size=1)
-    #self.str_detections_pub = rospy.Publisher("/yolact_ros/str_detections", String, queue_size=1)
+
     self.bridge = CvBridge()
 
     self.image_vis_queue = Queue(maxsize = 1)
@@ -61,7 +61,7 @@ class YolactNode:
 
     # set parameter default values (will be overwritten by dynamic reconfigure callback)
 
-    self.image_topic = '/camera/rgb/image_raw'
+    self.image_topic = ''
     self.use_compressed_image = False
     self.publish_visualization = True
     self.publish_detections = True
@@ -72,7 +72,7 @@ class YolactNode:
     self.display_text = True
     self.display_scores = True
     self.display_fps = False
-    self.score_threshold = 0.15
+    self.score_threshold = 0.0
     self.crop_masks = True
     self.top_k = 5
 
@@ -247,9 +247,7 @@ class YolactNode:
       det.box.x2 = int(x2)
       det.box.y2 = int(y2)
       mask = masks[detnum,y1:y2,x1:x2]
-      #det.mask.mask = np.packbits(mask.bool().cpu()).tolist()
-      det.mask.mask = np.array(mask.flatten().cpu(), dtype=bool)
-
+      det.mask.mask = np.array(mask.flatten().cpu(), dtype=bool)      
       det.mask.height = int(y2 - y1)
       det.mask.width = int(x2 - x1)
       dets_msg.detections.append(det)
@@ -287,7 +285,6 @@ class YolactNode:
       if self.publish_detections:
         dets = self.generate_detections_msg(classes, scores, boxes, masks, image_header)
         self.detections_pub.publish(dets)
-        #self.str_detections_pub.publish(str(dets))
 
       if self.display_visualization and not self.image_vis_queue.full():
         self.image_vis_queue.put_nowait(image)
